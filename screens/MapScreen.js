@@ -3,18 +3,36 @@ import { View, Text, StyleSheet, ActivityIndicator, FlatList, Pressable, useWind
 import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { getNearby } from '../services/wiki';
+import { loadSettings } from '../services/settings';
 import { FAB } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 
 export default function MapScreen() {
   const [coords, setCoords] = useState(null); 
   const [errorMsg, setErrorMsg] = useState(null);
   const [pois, setPois] = useState([]);
+  const [settings, setSettings] = useState({ radius: 1000, language: 'en' });
   const mapRef = useRef(null);
   const insets = useSafeAreaInsets();
   const { height } = useWindowDimensions();
   const [sheetOpen, setSheetOpen] = useState(true);
   const [loading, setLoading] = useState(true);
+  const navigation = useNavigation();
+
+  // Load settings when tab becomes focused
+  useFocusEffect(
+    React.useCallback(() => {
+      (async () => {
+        try {
+          const s = await loadSettings();
+          setSettings(s);
+        } catch (e) {
+          console.error('Failed to load settings', e);
+        }
+      })();
+    }, [])
+  );
 
   useEffect(() => {
     (async () => {
@@ -39,18 +57,24 @@ export default function MapScreen() {
     })();
   }, []);
 
-  // Fetch nearby POIs once we have coordinates (static fetch for now)
+  
   useEffect(() => {
     if (!coords) return;
     (async () => {
       try {
-        const results = await getNearby(coords.latitude, coords.longitude);
+        const results = await getNearby(
+          coords.latitude, 
+          coords.longitude, 
+          settings.radius, 
+          20, 
+          settings.language
+        );
         setPois(results);
       } catch (e) {
         // keep it minimal: fail silently for POIs, location already handled above
       }
     })();
-  }, [coords]);
+  }, [coords, settings]);
 
   if (loading) {
     return (
@@ -122,7 +146,7 @@ export default function MapScreen() {
         />
       </View>
 
-      {/* Simple collapsible bottom panel for nearby places */}
+
       <View
         style={[
           styles.sheet,
@@ -143,9 +167,12 @@ export default function MapScreen() {
             data={pois}
             keyExtractor={(item) => String(item.id)}
             renderItem={({ item }) => (
-              <View style={styles.poiItem}>
+              <Pressable
+                onPress={() => navigation.navigate('PoiDetail', { title: item.title })}
+                style={styles.poiItem}
+              >
                 <Text style={styles.poiTitle}>{item.title}</Text>
-              </View>
+              </Pressable>
             )}
             ItemSeparatorComponent={() => <View style={styles.separator} />}
             contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 4 }}
