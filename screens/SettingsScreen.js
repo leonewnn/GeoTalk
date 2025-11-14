@@ -63,7 +63,7 @@ export default function SettingsScreen() {
           />
         </View>
 
-        {/* Language picker */}
+  
         <View style={styles.section}>
           <Text style={styles.label}>Language</Text>
           <RadioButton.Group onValueChange={setLanguage} value={language}>
@@ -82,7 +82,7 @@ export default function SettingsScreen() {
           </RadioButton.Group>
         </View>
 
-        {/* Save button */}
+    
         <Button mode="contained" onPress={handleSave} style={styles.saveBtn}>
           Save Settings
         </Button>
