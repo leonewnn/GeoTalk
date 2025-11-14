@@ -9,6 +9,7 @@ import PoiDetailScreen from './screens/PoiDetailScreen';
 import { SQLiteProvider } from 'expo-sqlite';
 import { createSchema as createFavoritesSchema } from './services/favorites';
 import { createDownloadsSchema } from './services/downloads';
+import { createHistorySchema } from './services/history';
 
 import MapScreen from './screens/MapScreen';
 import FavoritesScreen from './screens/FavoritesScreen';
@@ -33,6 +34,7 @@ export default function App() {
   const initializeDb = async (db) => {
     await createFavoritesSchema(db);
     await createDownloadsSchema(db);
+    await createHistorySchema(db);
   };
 
   return (

@@ -7,6 +7,7 @@ import * as Speech from 'expo-speech';
 import { useSQLiteContext } from 'expo-sqlite';
 import { addFavorite, removeFavorite, isFavorite } from '../services/favorites';
 import { addDownload, isDownloaded } from '../services/downloads';
+import { addHistoryEntry } from '../services/history';
 
 export default function PoiDetailScreen({ route }) {
   const { title, offlineData } = route.params;
@@ -39,6 +40,9 @@ export default function PoiDetailScreen({ route }) {
           setFav(f);
           const d = await isDownloaded(db, s.id, s.title);
           setDownloaded(!!d);
+
+       
+          await addHistoryEntry(db, { id: s.id, title: s.title });
         }
       } catch (e) {
         if (mounted) setError(e?.message ?? 'Failed to load');
